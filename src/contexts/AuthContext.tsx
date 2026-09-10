@@ -1,9 +1,13 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { apiClient } from '@/lib/apiClient';
+import { apiClient, getAuthToken, setAuthToken } from '@/lib/apiClient';
 
-interface Profile {
+export interface User {
+  id: string;
+  email?: string | null;
+  display_name?: string | null;
+}
+
+export interface Profile {
   id: string;
   user_id: string;
   display_name: string | null;
@@ -12,12 +16,11 @@ interface Profile {
 }
 
 interface AuthContextType {
-  session: Session | null;
+  session: { access_token: string } | null;
   user: User | null;
   profile: Profile | null;
   loading: boolean;
   signUp: (email: string, password: string, displayName?: string) => Promise<{ error: Error | null; needsVerification?: boolean }>;
-
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<{ error: Error | null }>;
@@ -27,99 +30,152 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (_userId?: string) => {
+  const fetchProfile = async (): Promise<Profile | null> => {
     const res = await apiClient.get<Profile>('/api/v1/users/me');
     if (res.data) {
       setProfile(res.data);
+      setUser({
+        id: res.data.user_id,
+        email: res.data.email,
+        display_name: res.data.display_name,
+      });
+      return res.data;
     }
+    return null;
   };
 
   useEffect(() => {
-    // Set up auth listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          // Use setTimeout to avoid Supabase deadlock
-          setTimeout(() => fetchProfile(session.user.id), 0);
-        } else {
+    const token = getAuthToken();
+    if (token) {
+      fetchProfile()
+        .then((p) => {
+          if (!p) {
+            setAuthToken(null);
+            setUser(null);
+            setProfile(null);
+          }
+        })
+        .catch(() => {
+          setAuthToken(null);
+          setUser(null);
           setProfile(null);
-        }
-        setLoading(false);
-      }
-    );
-
-    // THEN check existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
       setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    }
   }, []);
 
   const signUp = async (email: string, password: string, displayName?: string) => {
-    const appUrl = import.meta.env.VITE_APP_URL && import.meta.env.VITE_APP_URL !== '*' 
-      ? import.meta.env.VITE_APP_URL 
-      : window.location.origin;
+    try {
+      const res = await apiClient.post<{ access_token: string; user: Profile }>(
+        '/api/v1/auth/signup',
+        {
+          email,
+          password,
+          display_name: displayName || undefined,
+        }
+      );
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { display_name: displayName },
-        emailRedirectTo: `${appUrl}/dashboard`,
-      },
-    });
+      if (res.error || !res.data) {
+        return { error: new Error(res.error || 'Failed to sign up'), needsVerification: false };
+      }
 
-    // Return information about whether Supabase required verification
-    const needsVerification = !error && !!data.user && !data.session;
+      setAuthToken(res.data.access_token);
+      setProfile(res.data.user);
+      setUser({
+        id: res.data.user.user_id,
+        email: res.data.user.email,
+        display_name: res.data.user.display_name,
+      });
 
-    const isVerificationEnabledInEnv = import.meta.env.VITE_ENABLE_AUTH_VERIFICATION !== 'false';
-    if (isVerificationEnabledInEnv && needsVerification) {
-      // We can clear the user state just to be safe so they stay on the "check email" page
-      setUser(null);
+      return { error: null, needsVerification: false };
+    } catch (err: any) {
+      return { error: err, needsVerification: false };
     }
-
-    return { error: error as Error | null, needsVerification };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error as Error | null };
+    try {
+      const res = await apiClient.post<{ access_token: string; user: Profile }>(
+        '/api/v1/auth/login',
+        { email, password }
+      );
+
+      if (res.error || !res.data) {
+        return { error: new Error(res.error || 'Invalid email or password') };
+      }
+
+      setAuthToken(res.data.access_token);
+      setProfile(res.data.user);
+      setUser({
+        id: res.data.user.user_id,
+        email: res.data.user.email,
+        display_name: res.data.user.display_name,
+      });
+
+      return { error: null };
+    } catch (err: any) {
+      return { error: err };
+    }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setProfile(null);
+    try {
+      await apiClient.post('/api/v1/auth/logout');
+    } catch {
+      // Ignore network failure on logout
+    } finally {
+      setAuthToken(null);
+      setUser(null);
+      setProfile(null);
+    }
   };
 
   const deleteAccount = async () => {
-    const { error } = await supabase.rpc('delete_user_account' as any);
-    if (!error) {
-      await supabase.auth.signOut();
-      setProfile(null);
+    try {
+      const res = await apiClient.delete('/api/v1/auth/account');
+      if (res.error) {
+        return { error: new Error(res.error) };
+      }
+      setAuthToken(null);
       setUser(null);
+      setProfile(null);
+      return { error: null };
+    } catch (err: any) {
+      return { error: err };
     }
-    return { error: error as Error | null };
   };
 
   const refreshProfile = async () => {
-    if (user) await fetchProfile(user.id);
+    if (getAuthToken()) {
+      await fetchProfile();
+    }
   };
 
+  const token = getAuthToken();
+  const session = token ? { access_token: token } : null;
+
   return (
-    <AuthContext.Provider value={{ session, user, profile, loading, signUp, signIn, signOut, deleteAccount, refreshProfile }}>
+    <AuthContext.Provider
+      value={{
+        session,
+        user,
+        profile,
+        loading,
+        signUp,
+        signIn,
+        signOut,
+        deleteAccount,
+        refreshProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Tables } from '@/integrations/supabase/types';
+import type { Tables } from '@/types/database';
 
 export interface PersonalExpenseSplit {
   user_id: string;

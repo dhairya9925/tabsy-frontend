@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
-import type { Database } from "@/integrations/supabase/types";
+import type { Database } from "@/types/database";
 
 // =============================================
 // Email Search (FastAPI endpoint)

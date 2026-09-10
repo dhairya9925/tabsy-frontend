@@ -1,4 +1,4 @@
-import type { Tables } from '@/integrations/supabase/types';
+import type { Tables } from '@/types/database';
 import { roundMoney, sumMoney } from './money';
 
 type Expense = Tables<'expenses'>;

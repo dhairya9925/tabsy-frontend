@@ -1,13 +1,12 @@
-import { afterEach, expect, it, vi } from 'vitest';
-import { apiClient } from './apiClient';
+import { apiClient, AUTH_TOKEN_KEY } from './apiClient';
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { auth: { getSession: vi.fn(async () => ({ data: { session: { access_token: 'test-jwt' } } })) } },
-}));
+afterEach(() => {
+  vi.unstubAllGlobals();
+  localStorage.clear();
+});
 
-afterEach(() => vi.unstubAllGlobals());
-
-it('PATCH forwards the Supabase JWT, JSON body and response envelope', async () => {
+it('PATCH forwards the Bearer JWT from localStorage, JSON body and response envelope', async () => {
+  localStorage.setItem(AUTH_TOKEN_KEY, 'test-jwt');
   const envelope = { data: { display_name: 'New name' }, error: null, meta: null };
   const fetchMock = vi.fn(async () => ({ json: async () => envelope }));
   vi.stubGlobal('fetch', fetchMock);
