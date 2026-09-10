@@ -1,0 +1,28 @@
+# ==============================================================================
+# Frontend .gitignore
+# ==============================================================================
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+dist-ssr/
+dev-dist/
+build/
+*.local
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# TypeScript & ESLint caches
+*.tsbuildinfo
+.eslintcache
+
+# Test coverage
+coverage/
+
+# Vite / PWA caches
+.vite/
