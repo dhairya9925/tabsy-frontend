@@ -1,0 +1,382 @@
+/* ============================================================
+   MOBILE-ONLY OVERRIDES — max-width: 768px
+   No desktop styles are touched. Every rule lives inside a
+   @media (max-width: 768px) block.
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+    /* ── 1. General Spacing ─────────────────────────────────── */
+    .container {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+
+    [data-mobile="main-content"] {
+        padding-top: 16px !important;
+        padding-bottom: 80px !important;
+        /* room for fixed bottom nav */
+    }
+
+    /* ── 2. Cards — universal radius + gap ──────────────────── */
+    .glass-card,
+    [class*="rounded-xl"] {
+        border-radius: 14px;
+    }
+
+    [data-radix-collection-item] {
+        border-radius: 8px;
+    }
+
+    /* ── 3. Top Navigation — compact ────────────────────────── */
+    header.sticky {
+        border-bottom: 1px solid hsl(var(--border));
+    }
+
+    header.sticky .container {
+        height: 52px;
+        min-height: 52px;
+    }
+
+    /* Hide hamburger menu — bottom nav handles it on mobile */
+    header.sticky button.md\:hidden {
+        display: none;
+    }
+
+    /* ── 4. Bottom Navigation — fixed bar ───────────────────── */
+    nav.fixed.bottom-0 {
+        height: 64px;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        background: hsl(var(--card) / 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid hsl(var(--border));
+    }
+
+    nav.fixed.bottom-0 .flex {
+        height: 100%;
+    }
+
+    nav.fixed.bottom-0 a {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        font-size: 10px;
+        padding: 4px 0;
+        min-width: 0;
+    }
+
+    nav.fixed.bottom-0 a svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    /* ── 5. Group Detail — Header ───────────────────────────── */
+    [data-mobile="group-header"] {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    [data-mobile="group-header"]>.flex-1 {
+        width: 100%;
+        flex-basis: 100%;
+    }
+
+    [data-mobile="group-header"] h1 {
+        font-size: 1.5rem;
+        line-height: 1.2;
+    }
+
+    [data-mobile="group-header"] p {
+        font-size: 0.8125rem;
+        margin-top: 2px;
+    }
+
+    /* ── 6. Invite Buttons — pill-style side-by-side ────────── */
+    [data-mobile="invite-buttons"] {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    [data-mobile="invite-buttons"] button {
+        border-radius: 999px;
+        font-size: 0.75rem;
+        height: 36px;
+        padding: 0 12px;
+    }
+
+    /* ── 7. Tab Bar — horizontal scroll, bottom indicator ───── */
+    [role="tablist"] {
+        display: flex !important;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        gap: 0;
+        padding: 0;
+        background: transparent;
+        border-radius: 0;
+        border-bottom: 1px solid hsl(var(--border));
+        height: auto;
+    }
+
+    [role="tablist"]::-webkit-scrollbar {
+        display: none;
+    }
+
+    [role="tablist"] [role="tab"] {
+        flex: 0 0 auto;
+        min-width: auto;
+        padding: 10px 14px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        border-radius: 0;
+        background: transparent !important;
+        box-shadow: none !important;
+        position: relative;
+        white-space: nowrap;
+        color: hsl(var(--muted-foreground));
+        border-bottom: 2px solid transparent;
+        transition: color 0.15s, border-color 0.15s;
+    }
+
+    [role="tablist"] [role="tab"][data-state="active"] {
+        color: hsl(var(--primary));
+        background: transparent !important;
+        box-shadow: none !important;
+        border-bottom: 2px solid hsl(var(--primary));
+    }
+
+    /* ── 8. Month / Period Navigation ───────────────────────── */
+    [data-mobile="month-picker"] {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 0;
+    }
+
+    [data-mobile="month-picker"] h2 {
+        font-size: 1.125rem;
+    }
+
+    /* ── 9. Progress / Status Card ──────────────────────────── */
+    [data-mobile="progress-card"] {
+        padding: 14px !important;
+        border-radius: 14px;
+    }
+
+    [data-mobile="progress-card"]>div:first-child {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    [data-mobile="progress-card"] button {
+        font-size: 0.75rem;
+        height: 32px;
+        padding: 0 10px;
+    }
+
+    /* ── 10. Summary Stat Cards — 2-col grid ────────────────── */
+    [data-mobile="stat-cards"] {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px !important;
+    }
+
+    [data-mobile="stat-cards"]>div {
+        padding: 14px !important;
+        border-radius: 14px;
+    }
+
+    [data-mobile="stat-cards"] .text-3xl {
+        font-size: 1.375rem;
+    }
+
+    /* Settlement totals — same 2-col grid */
+    .grid.grid-cols-2.gap-3 {
+        gap: 10px;
+    }
+
+    .grid.grid-cols-2.gap-3>div {
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    /* ── 11. Settlement Table → Card Layout ─────────────────── */
+    [data-mobile="settlement-table"] {
+        overflow: visible;
+        border: none;
+        background: transparent;
+        box-shadow: none;
+        padding: 0;
+    }
+
+    [data-mobile="settlement-table"] table {
+        display: block;
+    }
+
+    [data-mobile="settlement-table"] thead {
+        display: none;
+    }
+
+    [data-mobile="settlement-table"] tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    [data-mobile="settlement-table"] tr {
+        display: block;
+        background: hsl(var(--card));
+        border: 1px solid hsl(var(--border));
+        border-radius: 14px;
+        padding: 14px;
+    }
+
+    [data-mobile="settlement-table"] td {
+        display: block;
+        padding: 0;
+        border: none;
+    }
+
+    /* Force a line break and inner container for the stats block */
+    [data-mobile="settlement-table"] tr::after {
+        content: "";
+        display: block;
+        clear: both;
+    }
+
+    [data-mobile="settlement-table"] tbody td:first-child,
+    [data-mobile="settlement-table"] tbody td:nth-child(2) {
+        display: inline-block;
+        margin-bottom: 12px;
+    }
+
+    [data-mobile="settlement-table"] tbody td:first-child {
+        width: 70%;
+    }
+
+    [data-mobile="settlement-table"] tbody td:nth-child(2) {
+        width: 30%;
+        text-align: right;
+    }
+
+    /* Wrap the last 4 TDs in their own visual block via advanced targeting,
+       but actually just display them as inline-blocks with explicit widths 
+       since we can't wrap them in a div */
+    [data-mobile="settlement-table"] td:nth-child(n+3) {
+        display: inline-block;
+        width: 25%;
+        box-sizing: border-box;
+        text-align: center;
+        padding-top: 12px;
+        border-top: 1px solid hsl(var(--border));
+        font-size: 0.75rem;
+        vertical-align: top;
+    }
+
+    /* Add labels above the values via pseudo-elements */
+    [data-mobile="settlement-table"] td:nth-child(3)::before {
+        content: "Rent";
+        display: block;
+        font-size: 0.625rem;
+        font-weight: 500;
+        color: hsl(var(--muted-foreground));
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 2px;
+    }
+
+    [data-mobile="settlement-table"] td:nth-child(4)::before {
+        content: "Expense";
+        display: block;
+        font-size: 0.625rem;
+        font-weight: 500;
+        color: hsl(var(--muted-foreground));
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 2px;
+    }
+
+    [data-mobile="settlement-table"] td:nth-child(5)::before {
+        content: "Paid";
+        display: block;
+        font-size: 0.625rem;
+        font-weight: 500;
+        color: hsl(var(--muted-foreground));
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 2px;
+    }
+
+    [data-mobile="settlement-table"] td:nth-child(6)::before {
+        content: "Balance";
+        display: block;
+        font-size: 0.625rem;
+        font-weight: 500;
+        color: hsl(var(--muted-foreground));
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 2px;
+    }
+
+    /* ── 12. Settlement Summary Action Cards ────────────────── */
+    .space-y-2>[class*="border-red-500"],
+    .space-y-2>[class*="border-green-500"],
+    .space-y-2>.flex.items-center.gap-3 {
+        border-radius: 14px;
+        padding: 14px;
+    }
+
+    .space-y-2>[class*="border-red-500"] span,
+    .space-y-2>[class*="border-green-500"] span {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* ── 13. Expense Items — touch-friendly ─────────────────── */
+    .glass-card.group {
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    /* ── 14. Dashboard 2-col chart grid ─────────────────────── */
+    .grid.md\:grid-cols-2.gap-6 {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    /* ── 15. Page headers — slightly smaller on mobile ──────── */
+    .text-3xl {
+        font-size: 1.5rem;
+    }
+
+    h1.text-2xl {
+        font-size: 1.375rem;
+    }
+
+    /* ── 16. Dialogs — full width on mobile ─────────────────── */
+    [role="dialog"]>div {
+        max-width: calc(100vw - 40px);
+        border-radius: 16px;
+    }
+
+    /* ── 17. Expenses filter row ────────────────────────────── */
+    .flex.flex-col.sm\:flex-row.gap-3 {
+        gap: 8px;
+    }
+
+    .flex.flex-col.sm\:flex-row.gap-3 .grid.grid-cols-2 {
+        gap: 8px;
+    }
+
+    /* ── 18. Groups list cards ──────────────────────────────── */
+    .space-y-3>div[class*="p-4"] {
+        border-radius: 14px;
+    }
+
+}
