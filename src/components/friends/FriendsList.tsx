@@ -44,9 +44,52 @@ const FriendsList = ({ refreshKey }: { refreshKey?: number }) => {
                 getSentRequests(),
             ]);
 
+            const currentUserId = user.id;
+            const acceptedFriendIds = new Set<string>();
+            const acceptedEmails = new Set<string>();
+
+            friendsData.forEach((f) => {
+                const counterpartId = f.user_id === currentUserId ? f.friend_id : f.user_id;
+                if (counterpartId) acceptedFriendIds.add(counterpartId);
+                if (f.profile?.user_id) acceptedFriendIds.add(f.profile.user_id);
+                if (f.profile?.email) acceptedEmails.add(f.profile.email.toLowerCase());
+            });
+
+            // Filter out sent requests where counterpart is already friends or has no profile
+            const validSentData = sentData.filter((s) => {
+                if (!s.profile && !s.friend_id) return false;
+                const counterpartId = s.user_id === currentUserId ? s.friend_id : s.user_id;
+                if (counterpartId && acceptedFriendIds.has(counterpartId)) return false;
+                if (s.profile?.user_id && acceptedFriendIds.has(s.profile.user_id)) return false;
+                if (s.profile?.email && acceptedEmails.has(s.profile.email.toLowerCase())) return false;
+                return true;
+            });
+
+            // Quietly delete stale sent requests on server
+            sentData.forEach((s) => {
+                const counterpartId = s.user_id === currentUserId ? s.friend_id : s.user_id;
+                const isStale = (!s.profile && !s.friend_id) ||
+                    (counterpartId && acceptedFriendIds.has(counterpartId)) ||
+                    (s.profile?.user_id && acceptedFriendIds.has(s.profile.user_id)) ||
+                    (s.profile?.email && acceptedEmails.has(s.profile.email.toLowerCase()));
+                if (isStale && s.id) {
+                    removeFriend(s.id).catch(() => {});
+                }
+            });
+
+            // Filter out pending requests where counterpart is already friends
+            const validPendingData = pendingData.filter((p) => {
+                if (!p.profile && !p.user_id) return false;
+                const counterpartId = p.user_id === currentUserId ? p.friend_id : p.user_id;
+                if (counterpartId && acceptedFriendIds.has(counterpartId)) return false;
+                if (p.profile?.user_id && acceptedFriendIds.has(p.profile.user_id)) return false;
+                if (p.profile?.email && acceptedEmails.has(p.profile.email.toLowerCase())) return false;
+                return true;
+            });
+
             setFriends(friendsData);
-            setPending(pendingData);
-            setSent(sentData);
+            setPending(validPendingData);
+            setSent(validSentData);
         } catch {
             toast({
                 title: "Error loading friends",
@@ -304,10 +347,26 @@ const FriendsList = ({ refreshKey }: { refreshKey?: number }) => {
                             key={f.id}
                             friend={f}
                             actions={
-                                <Badge variant="secondary" className="gap-1">
-                                    <Clock className="h-3 w-3" />
-                                    Pending
-                                </Badge>
+                                <div className="flex items-center gap-2">
+                                    <Badge variant="secondary" className="gap-1">
+                                        <Clock className="h-3 w-3" />
+                                        Pending
+                                    </Badge>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                        onClick={() => handleRemove(f.id)}
+                                        disabled={actionLoading === f.id}
+                                        title="Cancel request"
+                                    >
+                                        {actionLoading === f.id ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <X className="h-4 w-4" />
+                                        )}
+                                    </Button>
+                                </div>
                             }
                         />
                     ))
