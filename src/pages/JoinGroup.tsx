@@ -25,13 +25,13 @@ const JoinGroup = () => {
 
         const handleJoin = async () => {
             try {
-                await joinGroup.mutateAsync(id);
+                const resolvedGroupId = await joinGroup.mutateAsync(id);
                 setStatus('success');
                 toast({ title: 'Successfully joined group!' });
 
                 // Short delay to show success icon, then redirect
                 setTimeout(() => {
-                    navigate(`/groups/${id}`);
+                    navigate(`/groups/${resolvedGroupId || id}`);
                 }, 1500);
             } catch (err: any) {
                 setStatus('error');

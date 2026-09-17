@@ -136,13 +136,15 @@ const GroupDetail = () => {
   };
 
   const handleCopyLink = () => {
-    const link = `${window.location.origin}/join/${group.id}`;
+    const code = group.invite_code || group.id;
+    const link = `${window.location.origin}/join/${code}`;
     navigator.clipboard.writeText(link);
     toast({ title: 'Invite link copied to clipboard!' });
   };
 
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(group.id);
+    const code = group.invite_code || group.id;
+    navigator.clipboard.writeText(code);
     toast({ title: 'Invite code copied to clipboard!' });
   };
 

@@ -12,6 +12,7 @@ export interface Group {
   created_by: string;
   created_at: string;
   updated_at: string;
+  invite_code?: string;
 }
 
 export interface GroupMember {
@@ -188,7 +189,7 @@ export const useJoinGroup = () => {
       const res = await apiClient.post<GroupMember>(`/api/v1/groups/${groupId}/join`);
       if (res.error) throw new Error(res.error);
 
-      return groupId;
+      return res.data?.group_id || groupId;
     },
     onSuccess: (groupId) => {
       queryClient.invalidateQueries({ queryKey: ['groups'] });
