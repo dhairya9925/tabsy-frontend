@@ -1,5 +1,5 @@
 # ==============================================================================
-# Frontend .gitignore
+# Tabsy Frontend — .gitignore
 # ==============================================================================
 
 # Dependencies
@@ -26,3 +26,15 @@ coverage/
 
 # Vite / PWA caches
 .vite/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.agents/
+.gemini/
+.codex/
+.cursor/
